@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.sso.code.mapper.AuthorityMapper">
+    <select id="getAuthorityRoles" resultMap="AuthorityMap">
+        select a.*, r.id as rid, rname, rnameZh
+        from authority a, authority_role ar, role r
+        where a.id = ar.aid and r.id = ar.rid
+    </select>
+    <resultMap id="AuthorityMap" type="org.sso.code.model.Authority">
+        <id column="id" property="id"></id>
+        <result column="accessPath" property="accessPath"></result>
+        <collection property="roles" ofType="org.sso.code.model.Role">
+            <id column="rid" property="id"></id>
+            <result column="rname" property="rname"></result>
+            <result column="rnameZh" property="rnameZh"></result>
+        </collection>
+    </resultMap>
+</mapper>

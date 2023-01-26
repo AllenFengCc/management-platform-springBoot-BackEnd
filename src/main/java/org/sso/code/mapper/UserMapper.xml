@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.sso.code.mapper.UserMapper">
+    <select id="getUserInfos" resultType="org.sso.code.model.User">
+        select *
+        from user
+        <where>
+            <if test="value != null">
+                username like concat('%',#{value},'%')
+                or
+                nickname like concat('%',#{value},'%')
+            </if>
+        </where>
+        order by id
+    </select>
+
+    <select id="getUsersRoles" resultMap="UserMap">
+        select u.id, u.username,r.id as rid,rname,rnameZh
+        from user u
+        join user_role ur
+        on u.id = ur.uid
+        join role r
+        on r.id = ur.rid
+        order by u.id
+    </select>
+    <resultMap id="UserMap" type="org.sso.code.model.User">
+        <id column="id" property="id"></id>
+        <result column="username" property="username"></result>
+        <collection property="roles" ofType="org.sso.code.model.Role">
+            <id column="rid" property="id"></id>
+            <result column="rname" property="rname"></result>
+            <result column="rnameZh" property="rnameZh"></result>
+        </collection>
+    </resultMap>
+
+    <update id="updateTime">
+        update user
+        set update_time = CURRENT_TIMESTAMP
+        where id = #{id}
+    </update>
+
+    <update id="updateEnabled">
+        update user
+        set enabled = #{enabled}
+        where id = #{id}
+    </update>
+
+    <update id="updateNonLocked">
+        update user
+        set nonLocked = #{nonLocked}
+        where id = #{id}
+    </update>
+
+    <insert id="insertUserRoles">
+        insert into user_role
+        values
+        <foreach collection="roleIds" item="rid" separator=",">
+            (default,#{id},#{rid})
+        </foreach>
+    </insert>
+
+    <delete id="deleteUserRoles">
+        delete from user_role
+        where uid = #{id}
+    </delete>
+
+    <select id="getUserRoles" resultType="org.sso.code.model.Role">
+        select *
+        from role
+        where id in (select rid from user_role where uid = #{id})
+    </select>
+
+    <delete id="deleteUserByID">
+        delete from user
+        where id = #{id}
+    </delete>
+
+    <update id="updateUserInfos">
+        update user
+        set username = #{username}, email = #{email}, phoneNo = #{phoneNo}, nickname = #{nickname}
+        where id = #{id}
+    </update>
+
+    <insert id="addUser">
+        insert into user (username,password,nickname,email,phoneNo,gender,create_time)
+        values (#{username},#{password},#{nickname},#{email},#{phoneNo},#{gender},CURRENT_TIMESTAMP)
+    </insert>
+
+    <select id="getUsers" resultType="org.sso.code.model.User">
+        select username
+        from user
+        order by id
+    </select>
+</mapper>

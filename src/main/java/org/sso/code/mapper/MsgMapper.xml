@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.sso.code.mapper.MsgMapper">
+    <insert id="msgPublish">
+        <selectKey keyProperty="id" resultType="Long" order="AFTER">
+            select last_insert_id()
+        </selectKey>
+        insert into msg_pub
+        values (default,#{title},#{mdContent},#{htmlContent},#{uid},CURRENT_TIMESTAMP,default,#{status},default)
+    </insert>
+
+    <update id="modifyMsg">
+        update msg_pub
+        set title = #{title},mdContent = #{mdContent},htmlContent = #{htmlContent},status = #{status},updateTime = CURRENT_TIMESTAMP
+        where id = #{id}
+    </update>
+
+    <select id="getMsgInfos" resultMap="MsgInfosMap">
+        select m.id as id, m.title, m.publishTime, m.updateTime, m.uid, m.status, u.nickname
+        from msg_pub m join user u
+        on m.uid = u.id
+        <where>
+            <if test="status == 0">
+                status = 1
+            </if>
+            <if test="status != 0">
+                status = #{status} and uid = #{uid}
+            </if>
+            <if test="keyWords != null">
+                and title like concat('%',#{keyWords},'%')
+            </if>
+        </where>
+        order by updateTime desc
+    </select>
+    <resultMap id="MsgInfosMap" type="org.sso.code.model.MsgPub">
+        <id column="id" property="id"></id>
+        <result column="title" property="title"></result>
+        <result column="publishTime" property="publishTime"></result>
+        <result column="updateTime" property="updateTime"></result>
+        <result column="status" property="status"></result>
+        <association property="user" javaType="org.sso.code.model.User">
+            <id column="uid" property="id"></id>
+            <result column="nickname" property="nickname"></result>
+        </association>
+    </resultMap>
+
+    <select id="getMsgForMain" resultType="org.sso.code.model.MsgPub">
+        select * from msg_pub
+        where status = 1 order by updateTime desc limit 5
+    </select>
+
+    <update id="deleteMsgById">
+        update msg_pub
+        set status = 3, updateTime = CURRENT_TIMESTAMP
+        where id = #{id}
+    </update>
+
+    <delete id="realDeleteMsgById">
+        delete from msg_pub
+        where id = #{id}
+    </delete>
+
+    <update id="resMsgById">
+        update msg_pub
+        set status = 2, updateTime = CURRENT_TIMESTAMP
+        where id = #{id}
+    </update>
+
+    <select id="getMsgForEdit" resultType="org.sso.code.model.MsgPub">
+        select id, title, mdContent, status
+        from msg_pub
+        where id = #{id}
+    </select>
+</mapper>

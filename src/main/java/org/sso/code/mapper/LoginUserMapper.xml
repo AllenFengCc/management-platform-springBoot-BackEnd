@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.sso.code.mapper.LoginUserMapper">
+    <select id="loadUserByUsername" resultType="org.sso.code.model.LoginUser">
+        select *
+        from newSSO.user
+        where username = #{username}
+    </select>
+
+    <select id="getRolesById" resultType="org.sso.code.model.Role">
+        select *
+        from newSSO.role
+        where id in (select rid from newSSO.user_role where uid = #{id})
+    </select>
+
+    <insert id="addRecord">
+        insert into logindata (username,nickname,login_time)
+        values (#{username},#{nickname},CURRENT_TIMESTAMP)
+    </insert>
+</mapper>
